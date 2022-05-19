@@ -5,14 +5,14 @@ KERNEL_LOCATION equ 0x1000
 BOOT_DISK: db 0
 mov [BOOT_DISK], dl
 
-mov ax, 0
+mov ax, ax
 mov es, ax
 mov ds, ax
 mov bp, 0x8000
 mov sp, bp
 
 mov bx, KERNEL_LOCATION
-mov dh, 20 ; 20 is 10 KB check if it is enough
+mov dh, 2 ; 20 is 10 KB check if it is enough
 
 mov ah, 0x02
 mov al, dh
@@ -28,29 +28,68 @@ mov al, 0x3
 int 0x10 ; text mode
 
 ; 3rd Switches to Protected Mode
+; equ is used to set constants
+CODE_SEG equ code_descriptor - GDT_Start
+DATA_SEG equ data_descriptor - GDT_Start
 
-mov al, 0
-adc al, 0
-cmp al, 1
-je errorStr
-
-mov ah, 0x0e
-mov al, [0x7e00]
-
-printStr:
-	int 0x10
-	inc bx
-	mov al, [bx]
-	cmp al, 0
-	jne printStr
+cli ; disabled all BIOS interrupts
+lgdt [GDT_Descriptor] ; loads the GDT
+; changes last bit of cr0 to 1
+mov eax, cr0
+or eax, 1
+mov cr0, eax ; now in 32 bit mode
+jmp CODE_SEG:start_protected_mode
 
 jmp $
+; db is one byte, dw is two bytes, dd is four bytes
+GDT_Start:
+	null_descriptor:
+		dd 0 ; four times 00000000
+		dd 0 ; four times 00000000
+	code_descriptor:
+		; first 16 bits of limit
+		dw 0xffff
+		; first 24 bits of base
+		dw 0
+		db 0
+		; present, privelege, and type flags 
+		db 0b10011010
+		; Other flags and last four bits of limit
+		db 0b11001111
+		; Last 8 bits of base
+		db 0
+	data_descriptor:
+		; first 16 bits of limit
+		dw 0xffff
+		; first 24 bits of base
+		dw 0
+		db 0
+		; present, privelege, and type flags 
+		db 0b10010010
+		; Other flags and last four bits of limit
+		db 0b11001111
+		; Last 8 bits of base
+		db 0
+	GDT_End:
+	GDT_Descriptor:
+		dw GDT_End - GDT_Start - 1 ; size
+		dd GDT_Start ; start
+ 
 
-errorStr:
-	mov ah, 0x0e
-	add al, 48
-	mov al, 'E'
-	int 0x10
+[bits 32]
+start_protected_mode:
+	; setup segment registers and stack
+	mov ax, DATA_SEG
+	mov ds, ax
+	mov ss, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+	mov ebp, 0x90000
+	mov esp, ebp
+	
+	jmp KERNEL_LOCATION ; go to kernel
 
 times 510-($-$$) db 0
 db 0x55, 0xaa
