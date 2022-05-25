@@ -1,6 +1,7 @@
 global outb
 global inb
 global cursor_enable
+global video_mode
 
 ; outputs al to the port dx
 outb: ; (dx, al)
@@ -18,3 +19,9 @@ inb: ; (dx)
 	in eax, dx ; eax is where you store what you return 
 	ret
 
+; turns to the video mode, but uses bios interrupt
+video_mode:
+	mov ah, 0x00 ; function 00h = mode set
+	mov al, 0x13 ; 256-color mode 
+	int 0x10
+	ret
