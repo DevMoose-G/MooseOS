@@ -10,6 +10,8 @@ extern void outb(int port, int data);
 extern int inb(int port);
 extern void video_mode();
 
+void* memset(void* dest, int val, int bytes);
+
 /* SCREEN.C */
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -40,5 +42,8 @@ void clr_screen();
 int terminal_print(const char* str);
 void cursor_enable(int cursor_start, int cursor_end);
 
+/* IDT.C */
+void idt_install();
+void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags);
 
 #endif
