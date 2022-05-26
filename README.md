@@ -7,7 +7,11 @@
 - Basic UI: Wheel of Options that you use the knob to scroll through
 
 ## Documentation Used
-[Bran's Kernel Development Tutorial](wwulw.osdever.net/bkerndev/Docs/basickernel.htm)
-[OSDev.org](https://wiki.osdev.org/)ulo
+[Bran's Kernel Development Tutorial](www.osdever.net/bkerndev/Docs/basickernel.htm)
+
+[OSDev.org](https://wiki.osdev.org/)
+
 [NASM Documentation](https://www.nasm.us/doc/nasmdocb.html)
+
 [DaedulusCommunity's Making an OS series](https://www.youtube.com/c/DaedalusCommunity)
+
