@@ -12,7 +12,7 @@ mov bp, 0x8000
 mov sp, bp
 
 mov bx, KERNEL_LOCATION
-mov dh, 2 ; 20 is 10 KB check if it is enough
+mov dh, 2 ; 2 is 1 KB check if it is enough
 
 mov ah, 0x02
 mov al, dh
@@ -40,7 +40,7 @@ or eax, 1
 mov cr0, eax ; now in 32 bit mode
 jmp CODE_SEG:start_protected_mode
 
-jmp $
+jmp $ ; causes an endless loop for the kernel to run
 ; db is one byte, dw is two bytes, dd is four bytes
 GDT_Start:
 	null_descriptor:
@@ -77,6 +77,8 @@ GDT_Start:
  
 
 [bits 32]
+global start
+start:
 start_protected_mode:
 	; setup segment registers and stack
 	mov ax, DATA_SEG

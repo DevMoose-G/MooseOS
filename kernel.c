@@ -1,41 +1,4 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#define VGA_WIDTH 80
-#define VIDEO_START 0xb8000
-
-enum vga_color {
-	VGA_COLOR_BLACK = 0,
-	VGA_COLOR_BLUE = 1,
-	VGA_COLOR_GREEN = 2,
-	VGA_COLOR_CYAN = 3,
-	VGA_COLOR_RED = 4,
-	VGA_COLOR_MAGENTA = 5,
-	VGA_COLOR_BROWN = 6,
-	VGA_COLOR_LIGHT_GRAY = 7,
-	VGA_COLOR_DARK_GRAY = 8,
-	VGA_COLOR_LIGHT_BLUE = 9,
-	VGA_COLOR_LIGHT_GREEN = 10,
-	VGA_COLOR_LIGHT_CYAN = 11,
-	VGA_COLOR_LIGHT_RED = 12,
-	VGA_COLOR_LIGHT_MAGENTA = 13,
-	VGA_COLOR_LIGHT_YELLOW = 14,
-	VGA_COLOR_LIGHT_WHITE = 15
-};
-
-extern void outb(int port, int data);
-extern int inb(int port);
-extern void video_mode();
-
-void update_cursor(int x, int y){
-	int pos = y * VGA_WIDTH + x;
-	
-	outb(0x3D4, 0x0F);
-	outb(0x3D5, (int) (pos & 0xFF));
-	outb(0x3D4, 0x0E);
-	outb(0x3D5, (int) ((pos >> 8) & 0xFF));
-}
+#include <system.h>
 
 void plotPixel(int x, int y){
 	typedef unsigned char byte;
@@ -44,33 +7,13 @@ void plotPixel(int x, int y){
 	VGA[offset] = 0x09;
 }
 
-int printAt(const char* str, int vidAddress){
-	while(*str != '\0'){
-		*(char*)vidAddress = *str;
-		vidAddress+=2;
-		str++;
-	}
-	
-	// updates cursor
-	update_cursor((vidAddress - VIDEO_START)/2, 0);
-	return vidAddress;
-}
-
-
-void cursor_enable(int cursor_start, int cursor_end){
-	outb(0x3D4, 0x0A);
-	outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
-	
-	outb(0x3D4, 0x0B);
-	outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end); 
-}
-
-
 extern void main(){
+	clr_screen();
+	char* hpSnippet= "\tMr. and Mrs. Dursley, of number four, Privet Drive, were proud to say that they were perfectly normal, thank you very much. They were the last people you'd expect to be involved in anything strange or mysterious, because they just didn't hold with such nonsense.\n\tMr. Dursley was the director of a firm called Grunnings, which made drills. He was a big, beefy man with hardly any neck, although he did have a very large mustache. Mrs. Dursley was thin and blonde and had nearly twice the usual amont of neck, which came in very useful as she spent so much of her time craning over garden fences, spying on the neighbors. The Dursleys had a small son called Dudley and in their opinion there was no finer boy anywhere.";
+	char* snippet = hpSnippet+300;
 	int vidAddress = VIDEO_START;
-	cursor_enable(0, 25);
-	vidAddress = printAt("Damn this works! ", vidAddress);	
-	vidAddress = printAt("I can write multiple lines from C to here. ", vidAddress);
-	vidAddress = printAt("With this one sentence, I can write enough to fill a whole line if I can just waffle for long enough to fill any screen size.", vidAddress);
+	cursor_enable(0, VGA_WIDTH);
+	int pos = terminal_print(hpSnippet);	
 	//plotPixel(8, 8);
+	for(;;); // endless loop for kernel
 }
